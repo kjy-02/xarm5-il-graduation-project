@@ -1,0 +1,78 @@
+keyboard_teleop:
+  ros__parameters:
+    output_topic: /xarm_il/teleop_twist
+    event_topic: /xarm_il/record_event
+    mode_topic: /xarm_il/control_mode
+    deadman_topic: /xarm_il/deadman
+    frame_id: link_base
+    control_rate_hz: 20.0
+    max_xy_speed: 0.03
+    max_z_speed: 0.01
+    smoothing_response: 0.35
+    # Reverse an entry if a keyboard axis moves opposite to the intended direction.
+    axis_signs: [1.0, 1.0, 1.0]
+
+safety_mux:
+  ros__parameters:
+    teleop_topic: /xarm_il/teleop_twist
+    policy_topic: /xarm_il/policy_twist
+    mode_topic: /xarm_il/control_mode
+    deadman_topic: /xarm_il/deadman
+    servo_topic: /servo_server/delta_twist_cmds
+    executed_topic: /xarm_il/executed_twist
+    tcp_pose_topic: /xarm_il/tcp_pose
+    status_topic: /xarm_il/safety_status
+    command_frame: link_base
+    eef_frame: link_eef
+    initial_mode: teleop
+    publish_rate_hz: 20.0
+    command_timeout_s: 0.25
+    max_xy_speed: 0.04
+    max_z_speed: 0.015
+    # Measure and replace these bounds before disabling dry_run.
+    workspace_min: [0.20, -0.35, 0.05]
+    workspace_max: [0.65, 0.35, 0.50]
+    workspace_margin: 0.005
+    workspace_lookahead_s: 0.25
+    require_tf: true
+    dry_run: true
+    start_servo_service: /servo_server/start_servo
+    auto_start_servo: true
+
+episode_recorder:
+  ros__parameters:
+    dataset_root: ~/xarm_il_data/xarm5_drag
+    task: Drag the object into the xArm side basket.
+    fps: 10.0
+    episode_timeout_s: 30.0
+    max_sensor_age_s: 0.25
+    jpeg_quality: 90
+    min_episode_frames: 20
+    joint_names: [joint1, joint2, joint3, joint4, joint5]
+    # One wrist camera works in code. Add a fixed overview camera if the basket or
+    # object frequently leaves the wrist view, keeping both arrays in the same order.
+    camera_names: [wrist]
+    camera_topics: [/camera_wrist/color/image_raw]
+    joint_state_topic: /joint_states
+    action_topic: /xarm_il/executed_twist
+    tcp_pose_topic: /xarm_il/tcp_pose
+    event_topic: /xarm_il/record_event
+    safety_status_topic: /xarm_il/safety_status
+    require_tcp_pose: true
+
+policy_node:
+  ros__parameters:
+    checkpoint_path: ""
+    camera_topics: [/camera_wrist/color/image_raw]
+    joint_state_topic: /joint_states
+    policy_topic: /xarm_il/policy_twist
+    mode_topic: /xarm_il/control_mode
+    enable_service: /xarm_il/enable_policy
+    command_frame: link_base
+    control_rate_hz: 10.0
+    max_observation_age_s: 0.25
+    max_policy_run_s: 15.0
+    execute_steps_per_chunk: 3
+    max_xy_speed: 0.04
+    max_z_speed: 0.015
+    device: auto
